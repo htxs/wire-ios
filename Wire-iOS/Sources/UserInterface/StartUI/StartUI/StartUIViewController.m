@@ -400,11 +400,12 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
 
 - (void)performSearch
 {
-    NSLog(@"Search for %@", self.peopleInputController.plainTextContent);
+    NSString *searchString = self.peopleInputController.plainTextContent;
+    NSLog(@"Search for %@", searchString);
     [self.startUIView hideEmptyResutsView];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(performSearch) object:nil];
-    
-    if (self.peopleInputController.plainTextContent.length == 0) {
+
+    if (searchString.length == 0) {
         if (self.selection.selectedUsers.count == 0) {
             self.mode = StartUIModeInitial;
             [self doInitialSearch];
@@ -412,15 +413,17 @@ static NSUInteger const StartUIInitiallyShowsKeyboardConversationThreshold = 10;
         else {
             self.mode = StartUIModeUsersSelected;
             [self executeSearch:^{
-                return [self.searchDirectory searchForLocalUsersAndConversationsMatchingQueryString:self.peopleInputController.plainTextContent];
+                return [self.searchDirectory searchForLocalUsersAndConversationsMatchingQueryString:searchString];
             } withType:StartUISearchTypeContactsAndConverastions];
         }
     }
     else {
         self.mode = StartUIModeSearch;
+        BOOL leadingAt = [[searchString substringToIndex:1] isEqualToString:@"@"];
+        [Analytics.shared tagEnteredSearchWithLeadingAtSign:leadingAt];
         // invoke directory search with the new text    
         [self executeSearch:^{
-            return [self.searchDirectory searchForUsersAndConversationsMatchingQueryString:self.peopleInputController.plainTextContent];        
+            return [self.searchDirectory searchForUsersAndConversationsMatchingQueryString:searchString];
         } withType:StartUISearchTypeContactsAndConverastions];
     }
 }

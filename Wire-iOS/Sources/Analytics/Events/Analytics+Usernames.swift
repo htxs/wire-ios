@@ -31,6 +31,7 @@ extension Event {
     }
 }
 
+
 enum UserNameEvent {
 
     enum Settings: Event {
@@ -65,6 +66,22 @@ enum UserNameEvent {
         }
     }
 
+    enum Search: Event {
+        case entered(unsernameOnly: Bool)
+
+        var name: String {
+            switch self {
+            case .entered(unsernameOnly: _): return "contacts.entered_search"
+            }
+        }
+
+        var attributes: [AnyHashable : Any]? {
+            switch self {
+            case .entered(unsernameOnly: let username): return ["by_username_only": username ? "true" : "false"]
+            }
+        }
+    }
+
 }
 
 
@@ -75,3 +92,13 @@ extension Analytics {
     }
     
 }
+
+
+// MARK: – Objective-C Interoperability
+
+extension Analytics {
+    @objc(tagEnteredSearchWithLeadingAtSign:) public func tagEnteredSearch(leadingAt usernameOnly: Bool) {
+        tag(UserNameEvent.Search.entered(unsernameOnly: usernameOnly))
+    }
+}
+
